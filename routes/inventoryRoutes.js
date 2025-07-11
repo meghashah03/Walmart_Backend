@@ -1,5 +1,6 @@
 const express = require('express');
 const { query, param, validationResult } = require('express-validator');
+const { validateRequest } = require('../utils/validation');
 const {
   getAllInventory,
   getInventoryBySKU
@@ -7,15 +8,7 @@ const {
 
 const router = express.Router();
 
-// Validation middleware
-const validateRequest = (validations) => async (req, res, next) => {
-  await Promise.all(validations.map((v) => v.run(req)));
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
+
 
 
 router.get(

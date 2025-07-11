@@ -8,7 +8,9 @@ const parseSortParam = (sort) => {
 
 exports.getAllProducts = async (req, res, next) => {
   try {
-    const { category, search, page = 1, limit = 10, sort } = req.query;
+      const { category, search, sort } = req.query;
+       const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
 
     let query = {};
     let sortBy = {};
@@ -31,19 +33,25 @@ exports.getAllProducts = async (req, res, next) => {
       sortBy = parseSortParam(sort);
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+// Remove these parseInt calls if variables are parsed earlier
+   const skip = (page - 1) * limit;
+
 
     const [products, total] = await Promise.all([
       Product.find(query)
         .sort(sortBy)
         .skip(skip)
-        .limit(parseInt(limit)),
+        
+        .limit(limit),
       Product.countDocuments(query),
     ]);
 
     res.status(200).json({
-      page: parseInt(page),
+      
+       page,
       totalPages: Math.ceil(total / limit),
+
       totalItems: total,
       products,
     });

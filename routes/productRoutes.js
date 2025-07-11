@@ -1,20 +1,14 @@
 const express = require('express');
 const { check, param, query, validationResult } = require('express-validator');
 const router = express.Router();
+const { validateRequest } = require('../utils/validation');
 const {
   getAllProducts,
   getProductBySKU
 } = require('../controllers/productController');
 
 
-const validateRequest = (validations) => async (req, res, next) => {
-  await Promise.all(validations.map(validation => validation.run(req)));
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  next();
-};
+
 
 
 router.get(
