@@ -11,19 +11,23 @@ const productSchema = new Schema({
     images: [{ type: String }], // URLs
     price: {
       amount: { type: Number, required: true },
-      currency: { type: String, required: true }
+      currency: { type: String, required: true },
+      _id:false
     },
     manufactureDetails: {
       modelNumber: { type: String },
-      releaseDate: { type: Date }
+      releaseDate: { type: Date },
+      _id: false
     },
     shippingDetail: {
       weightKg: { type: Number },
       dimensionCm: {
         length: { type: Number },
         width: { type: Number },
-        height: { type: Number }
-      }
+        height: { type: Number },
+        _id:false
+      },
+      _id:false
     },
     stockKeepingUnit: { type: String },
     brand: { type: String },
@@ -31,8 +35,10 @@ const productSchema = new Schema({
       sku: { type: String, required: true },
       price: {
         amount: { type: Number, required: true },
-        currency: { type: String, required: true }
-      }
+        currency: { type: String, required: true },
+        _id:false
+      },
+      _id:false
     }]
 });
 

@@ -11,7 +11,8 @@ const orderSchema = new Schema({
     {
       sku: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
       quantity: { type: Number, required: true },
-      priceAtOrder: { type: Number, required: true }
+      priceAtOrder: { type: Number, required: true },
+      _id:false
     }
   ],
   totalAmount: { type: Number, required: true },
@@ -21,15 +22,18 @@ const orderSchema = new Schema({
     city: { type: String },
     state: { type: String },
     zip: { type: String },
-    country: { type: String }
+    country: { type: String },
+    _id:false
   },
   billingInfo: {
     method: { type: String },
-    //last4: { type: String }
+    //last4: { type: String },
+    _id:false
   },
   fulfillment: {
     warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse' },
-    deliveryId: { type: Schema.Types.ObjectId }
+    deliveryId: { type: Schema.Types.ObjectId },
+    _id:false
   }
 });
 

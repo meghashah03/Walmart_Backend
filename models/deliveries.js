@@ -14,13 +14,15 @@ const deliverySchema = new Schema({
   route: [
     {
       latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true }
+      longitude: { type: Number, required: true },
+      _id:false
     }
   ],
   trafficUpdates: [
-    {
+    { 
       timestamp: { type: Date, default: Date.now },
-      note: { type: String }
+      note: { type: String },
+      _id:false
     }
   ]
 });
