@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { validateRequest } = require('../utils/validation');
-const {
-  getAllOrders,
-  getOrderById
-} = require('../controllers/orderController');
-
+const { getAllOrders, getOrderById } = require('../controllers/orderController');
 const { query, param } = require('express-validator');
+
+
+
 
 // GET /orders
 router.get(
@@ -30,4 +29,5 @@ router.get(
 );
 
 module.exports = router;
+
 

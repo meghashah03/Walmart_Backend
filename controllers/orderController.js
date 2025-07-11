@@ -11,7 +11,7 @@ exports.getAllOrders = async (req, res, next) => {
       filter.status = status;
     }
 
-    if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
+     if (customerId) {
       filter.customerId = customerId;
     }
 
@@ -40,10 +40,8 @@ exports.getOrderById = async (req, res, next) => {
   try {
     const { orderId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ message: 'Invalid Order ID' });
-    }
-
+    
+np
     const order = await Order.findById(orderId)
       .populate('customerId', 'name email')
       .populate('items.sku', 'sku name price')
