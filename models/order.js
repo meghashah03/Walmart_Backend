@@ -34,7 +34,7 @@ const orderSchema = new Schema({
   items: [itemSchema],
   totalAmount: { type: Number, required: true },
   shippingAddress: addressSchema,
-  billingInfo: billingInfoSchema,
+ // billingInfo: billingInfoSchema,
   fulfillment: fulfillmentSchema
 });
 
