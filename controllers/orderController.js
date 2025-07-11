@@ -17,8 +17,9 @@ exports.getAllOrders = async (req, res, next) => {
 
     if (from || to) {
       filter.orderDate = {};
-      if (from) filter.orderDate.$gte = new Date(from);
-      if (to) filter.orderDate.$lte = new Date(to);
+      
+      if (from) filter.orderDate.$gte = from;
+      if (to) filter.orderDate.$lte = to;
     }
 
     const orders = await Order.find(filter)
