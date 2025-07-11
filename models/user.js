@@ -2,14 +2,6 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const addressSchema = new Schema({
-  label: { type: String },
-  street: { type: String },
-  city: { type: String },
-  state: { type: String },
-  zip: { type: String },
-  country: { type: String }
-}, { _id: false });
 
 const userSchema = new Schema({
   firstName: { type: String, required: true },
@@ -18,7 +10,14 @@ const userSchema = new Schema({
   hashedPassword: { type: String, required: true },
   roles: [{ type: String }],
   phone: { type: String },
-  addresses: [addressSchema],
+  addresses: [{
+    label: { type: String },
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    zip: { type: String },
+    country: { type: String }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 
