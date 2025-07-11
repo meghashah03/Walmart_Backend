@@ -15,6 +15,7 @@ const fs = require('fs');
 const productRoutes = require('./routes/productRoutes');
 const warehouseRoutes = require('./routes/warehouseRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/products', productRoutes);
 app.use('/warehouses', warehouseRoutes);
 app.use('/inventory', inventoryRoutes);
+app.use('/orders', orderRoutes);
 
 
 //middlewares
