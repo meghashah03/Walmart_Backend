@@ -10,4 +10,4 @@ const alertSchema = new Schema({
     createdAt: { type: Date, default: Date.now }
   });
   
-  module.exports = mongoose.model('Alert', alertSchema); 
+module.exports = mongoose.model('Alert', alertSchema); 
