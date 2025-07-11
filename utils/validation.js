@@ -1,3 +1,6 @@
+
+const { validationResult } = require('express-validator');
+
 const validateRequest = (validations) => async (req, res, next) => {
   try {
   await Promise.all(validations.map((v) => v.run(req)));
@@ -11,3 +14,4 @@ const validateRequest = (validations) => async (req, res, next) => {
     return res.status(500).json({ error: 'Internal validation error' });
   }
 };
+module.exports = { validateRequest };
