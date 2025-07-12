@@ -59,8 +59,17 @@ exports.createOrder = async (req, res, next) => {
   try {
     const { customerId, items, shippingAddress } = req.body;
 
-    if (!customerId || !Array.isArray(items) || items.length === 0) {
+    if (!customerId || !Array.isArray(items) || items.length === 0 || !shippingAddress) {
+     await session.abortTransaction();
       return res.status(400).json({ error: 'Missing required order fields' });
+    }
+
+    // Validate each item
+   for (const item of items) {
+      if (!item.sku || !item.quantity || item.quantity <= 0) {
+        await session.abortTransaction();
+        return res.status(400).json({ error: 'Invalid item: sku and positive quantity required' });
+      }
     }
 
     let totalAmount = 0;
@@ -69,7 +78,10 @@ exports.createOrder = async (req, res, next) => {
 
     for (const item of items) {
        const product = await Product.findById(item.sku).session(session);
-      if (!product) return res.status(404).json({ error: `Product ${item.sku} not found` });
+      if (!product) {
+        await session.abortTransaction();
+        return res.status(404).json({ error: `Product ${item.sku} not found` });
+      }
 
       const priceAtOrder = product.price.amount;
       totalAmount += priceAtOrder * item.quantity;
