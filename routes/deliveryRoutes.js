@@ -28,7 +28,7 @@ router.get(
 router.post(
     '/',
     validateRequest([
-      body('orderId').notEmpty().withMessage('orderId is required'),
+      body('orderId').isMongoId().withMessage('Valid orderId is required'),
       body('origin').notEmpty().withMessage('origin is required'),
       body('destination').notEmpty().withMessage('destination is required'),
       body('deliveryWindow').isISO8601().withMessage('Valid deliveryWindow is required'),

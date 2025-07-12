@@ -1,4 +1,5 @@
 const Delivery = require('../models/deliveries');
+const Order = require('../models/order');
 
 // GET /deliveries
 exports.getAllDeliveries = async (req, res, next) => {
@@ -47,7 +48,10 @@ exports.getDeliveryById = async (req, res, next) => {
 exports.scheduleDelivery = async (req, res, next) => {
     try {
       const { orderId, assignedDriver, status, scheduledStart, deliveryWindow, origin, destination, priority } = req.body;
-  
+      const order = await Order.findById(orderId);
+      if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+      }
       // Simulated logic for route generation (mock route points between origin & destination)
       const mockRoute = [
         { latitude: 23.8315, longitude: 91.2820 }, // Sample coord for origin (Agartala)

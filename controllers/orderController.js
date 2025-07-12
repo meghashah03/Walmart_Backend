@@ -82,21 +82,37 @@ exports.updateOrder = async (req, res, next) => {
 
     const updatedOrder = await order.save();
 
-    if (updates.status && updates.status !== originalStatus) {
-      if (updates.status === 'Shipped') {
-        for (const item of order.items) {
-          await Product.findByIdAndUpdate(item.sku, {
-            $inc: { stock: -item.quantity }
-          });
-        }
-      } else if (updates.status === 'Cancelled') {
-        for (const item of order.items) {
-          await Product.findByIdAndUpdate(item.sku, {
-            $inc: { stock: item.quantity }
-          });
-        }
+    const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    // Save order and update stock within transaction
+    await order.save({ session });
+    
+    if (updates.status === 'Shipped') {
+      for (const item of order.items) {
+        await Product.findByIdAndUpdate(
+          item.sku,
+          { $inc: { stock: -item.quantity } },
+          { session }
+        );
+      }
+    } else if (updates.status === 'Cancelled') {
+      for (const item of order.items) {
+        await Product.findByIdAndUpdate(
+          item.sku,
+          { $inc: { stock: item.quantity } },
+          { session }
+        );
       }
     }
+    
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 
     // Notify Assistant (stub)
     if (['Shipped', 'Cancelled'].includes(updates.status)) {
