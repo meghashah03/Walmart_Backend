@@ -13,15 +13,16 @@ const seedDeliveries = async () => {
 
     const deliveries = orders.map((order, index) => {
       const now = new Date();
+      const isDelivered = index % 3 === 0;
       const delayReason = index % 2 === 0 ? null : 'Traffic congestion';
 
       return {
         orderId: order._id,
         assignedDriver: `Driver-${100 + index}`,
-        status: index % 3 === 0 ? 'Delivered' : 'EnRoute',
+        status: isDelivered ? 'Delivered' : 'EnRoute',
         scheduledStart: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hrs ago
         estimatedArrival: new Date(now.getTime() + 30 * 60 * 1000), // in 30 mins
-        actualArrival: index % 3 === 0 ? now : null,
+        actualArrival: isDelivered ? now : null,
         delayReason: delayReason,
         route: [
           { latitude: 28.6139, longitude: 77.2090 }, // Delhi

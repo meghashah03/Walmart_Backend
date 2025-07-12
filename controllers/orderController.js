@@ -54,6 +54,8 @@ exports.getOrderById = async (req, res, next) => {
 
 // POST /orders
 exports.createOrder = async (req, res, next) => {
+  const session = await mongoose.startSession();
+   session.startTransaction();
   try {
     const { customerId, items, shippingAddress } = req.body;
 
@@ -63,34 +65,37 @@ exports.createOrder = async (req, res, next) => {
 
     let totalAmount = 0;
     const finalItems = [];
-    let assignedWarehouse = null;
+     const warehouseInventoryMap = new Map();
 
     for (const item of items) {
-      const product = await Product.findById(item.sku);
+       const product = await Product.findById(item.sku).session(session);
       if (!product) return res.status(404).json({ error: `Product ${item.sku} not found` });
 
       const priceAtOrder = product.price.amount;
       totalAmount += priceAtOrder * item.quantity;
 
-      const inventories = await Inventory.find({ sku: product._id }).sort({ availableQuantity: -1 });
+      const inventories = await Inventory.find({ sku: product._id }).sort({ availableQuantity: -1 }).session(session);
 
       const inventory = inventories.find(inv => inv.availableQuantity >= item.quantity);
       if (!inventory) {
+        await session.abortTransaction();
         return res.status(400).json({ error: `Insufficient stock for product ${product.sku}` });
       }
 
       inventory.availableQuantity -= item.quantity;
       inventory.reservedQuantity += item.quantity;
-      await inventory.save();
+      await inventory.save({ session });
 
       finalItems.push({ sku: product._id, quantity: item.quantity, priceAtOrder });
 
-      // Use the first suitable warehouse
-      if (!assignedWarehouse) {
-        assignedWarehouse = inventory.warehouseId;
+      
+      // Track warehouse usage
+      if (!warehouseInventoryMap.has(inventory.warehouseId.toString())) {
+        warehouseInventoryMap.set(inventory.warehouseId.toString(), inventory.warehouseId);
       }
     }
-
+   // For simplicity, use the first warehouse (or implement multi-warehouse logic)
+   const assignedWarehouse = warehouseInventoryMap.values().next().value;
     const order = new Order({
       customerId,
       items: finalItems,
@@ -102,7 +107,8 @@ exports.createOrder = async (req, res, next) => {
       }
     });
 
-    const savedOrder = await order.save();
+    const savedOrder = await order.save({ session });
+    await session.commitTransaction();
 
     res.status(201).json({
       orderId: savedOrder._id,
@@ -110,7 +116,10 @@ exports.createOrder = async (req, res, next) => {
       estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
     });
   } catch (error) {
+    await session.abortTransaction();
     console.error('Error creating order:', error);
     next(error);
+    } finally {
+    session.endSession();
   }
 };

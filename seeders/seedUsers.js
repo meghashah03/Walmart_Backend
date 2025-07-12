@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt'); 
 const User = require('../models/user');
 
 const seedUsers = async () => {
@@ -9,7 +10,7 @@ const seedUsers = async () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        hashedPassword: '$2b$10$abcdef1234567890hashedDummyPass1',
+         hashedPassword: await bcrypt.hash('defaultPassword123', 10), 
         roles: ['customer'],
         phone: '1234567890',
         addresses: [
@@ -27,7 +28,7 @@ const seedUsers = async () => {
         firstName: 'Alice',
         lastName: 'Walker',
         email: 'alice@example.com',
-        hashedPassword: '$2b$10$abcdef1234567890hashedDummyPass2',
+         hashedPassword: await bcrypt.hash('defaultPassword456', 10),
         roles: ['customer'],
         phone: '9876543210',
         addresses: [
