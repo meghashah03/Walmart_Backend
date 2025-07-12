@@ -75,44 +75,44 @@ exports.updateOrder = async (req, res, next) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    const originalStatus = order.status;
-
-    if (updates.status) order.status = updates.status;
-    if (updates.shippingAddress) order.shippingAddress = updates.shippingAddress;
-
-    const updatedOrder = await order.save();
-
+    let updatedOrder;
+    
     const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    // Save order and update stock within transaction
-    await order.save({ session });
-    
-    if (updates.status === 'Shipped') {
-      for (const item of order.items) {
-        await Product.findByIdAndUpdate(
-          item.sku,
-          { $inc: { stock: -item.quantity } },
-          { session }
-        );
+    session.startTransaction();
+    try {
+      const originalStatus = order.status;
+
+      if (updates.status) order.status = updates.status;
+      if (updates.shippingAddress) order.shippingAddress = updates.shippingAddress;
+
+      // Save order and update stock within transaction
+      const updatedOrder = await order.save({ session });
+      
+      if (updates.status === 'Shipped' && originalStatus !== 'Shipped') {
+        for (const item of order.items) {
+          await Product.findByIdAndUpdate(
+            item.sku,
+            { $inc: { stock: -item.quantity } },
+            { session }
+          );
+        }
+      } else if (updates.status === 'Cancelled' && originalStatus !== 'Cancelled') {
+        for (const item of order.items) {
+          await Product.findByIdAndUpdate(
+            item.sku,
+            { $inc: { stock: item.quantity } },
+            { session }
+          );
+        }
       }
-    } else if (updates.status === 'Cancelled') {
-      for (const item of order.items) {
-        await Product.findByIdAndUpdate(
-          item.sku,
-          { $inc: { stock: item.quantity } },
-          { session }
-        );
-      }
+      updatedOrder = await order.save({ session });
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
     }
-    
-    await session.commitTransaction();
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
-  }
 
     // Notify Assistant (stub)
     if (['Shipped', 'Cancelled'].includes(updates.status)) {
