@@ -16,6 +16,7 @@ const productRoutes = require('./routes/productRoutes');
 const warehouseRoutes = require('./routes/warehouseRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const metricsRoutes = require('./routes/metricsRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 dotenv.config();
@@ -24,6 +25,7 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(express.json()); 
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
@@ -33,6 +35,8 @@ app.use('/products', productRoutes);
 app.use('/warehouses', warehouseRoutes);
 app.use('/inventory', inventoryRoutes);
 app.use('/orders', orderRoutes);
+app.use('/metrics', metricsRoutes);
+
 
 
 //middlewares
