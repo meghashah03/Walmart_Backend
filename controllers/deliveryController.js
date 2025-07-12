@@ -1,5 +1,6 @@
 const Delivery = require('../models/deliveries');
 const Order = require('../models/order');
+const mongoose = require('mongoose');
 
 // GET /deliveries
 exports.getAllDeliveries = async (req, res, next) => {
@@ -12,14 +13,34 @@ exports.getAllDeliveries = async (req, res, next) => {
 
     if (from || to) {
       filter.scheduledStart = {};
-      if (from) filter.scheduledStart.$gte = new Date(from);
-      if (to) filter.scheduledStart.$lte = new Date(to);
+      if (from) {
+        const fromDate = new Date(from);
+        if (isNaN(fromDate.getTime())) {
+          return res.status(400).json({ message: 'Invalid from date format' });
+        }
+        filter.scheduledStart.$gte = fromDate;
+      }
+      if (to) {
+        const toDate = new Date(to);
+        if (isNaN(toDate.getTime())) {
+          return res.status(400).json({ message: 'Invalid to date format' });
+        }
+        filter.scheduledStart.$lte = toDate;
+      }
     }
 
-    const deliveries = await Delivery.find(filter);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
+    const deliveries = await Delivery.find(filter).skip(skip).limit(limit);
+    const total = await Delivery.countDocuments(filter);
+    
     res.status(200).json({
       count: deliveries.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       deliveries
     });
   } catch (err) {
@@ -31,6 +52,9 @@ exports.getAllDeliveries = async (req, res, next) => {
 exports.getDeliveryById = async (req, res, next) => {
   try {
     const { deliveryId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(deliveryId)) {
+      return res.status(400).json({ message: 'Invalid delivery ID format' });
+    }
 
     const delivery = await Delivery.findById(deliveryId).populate('orderId', 'customerId status orderDate');
 
@@ -48,6 +72,13 @@ exports.getDeliveryById = async (req, res, next) => {
 exports.scheduleDelivery = async (req, res, next) => {
     try {
       const { orderId, assignedDriver, status, scheduledStart, deliveryWindow, origin, destination, priority } = req.body;
+      if (!orderId) {
+        return res.status(400).json({ message: 'Order ID is required' });
+      }
+      if (!deliveryWindow) {
+        return res.status(400).json({ message: 'Delivery window is required' });
+      }
+  
       const order = await Order.findById(orderId);
       if (!order) {
         return res.status(404).json({ message: 'Order not found' });
@@ -96,7 +127,16 @@ exports.updateDelivery = async (req, res, next) => {
   try {
     const { deliveryId } = req.params;
     const { status, location, delayReason, trafficNote } = req.body;
-
+    
+    if (location) {
+      const { latitude, longitude } = location;
+      if (latitude && (latitude < -90 || latitude > 90)) {
+        return res.status(400).json({ message: 'Latitude must be between -90 and 90' });
+      }
+      if (longitude && (longitude < -180 || longitude > 180)) {
+          return res.status(400).json({ message: 'Longitude must be between -180 and 180' });
+        }
+     }
     const updateFields = {};
 
     if (status) {
@@ -113,7 +153,7 @@ exports.updateDelivery = async (req, res, next) => {
     // Push driver’s current location to the route (if provided)
     const updateOps = {};
 
-    if (location && location.latitude && location.longitude) {
+    if (location?.latitude && location?.longitude) {
       updateOps.$push = {
         route: {
           latitude: location.latitude,

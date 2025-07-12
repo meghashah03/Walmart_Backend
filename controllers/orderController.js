@@ -86,7 +86,7 @@ exports.updateOrder = async (req, res, next) => {
       if (updates.shippingAddress) order.shippingAddress = updates.shippingAddress;
 
       // Save order and update stock within transaction
-      const updatedOrder = await order.save({ session });
+      updatedOrder = await order.save({ session });
       
       if (updates.status === 'Shipped' && originalStatus !== 'Shipped') {
         for (const item of order.items) {
