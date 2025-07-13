@@ -11,7 +11,7 @@ const { query, param, body } = require('express-validator');
 router.get(
   '/',
   validateRequest([
-    query('status').optional().isIn(['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']),
+    query('status').optional().isIn(['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Fulfilled']),
     query('customerId').optional().isMongoId().withMessage('Invalid customerId'),
     query('from').optional().isISO8601().toDate(),
     query('to').optional().isISO8601().toDate()

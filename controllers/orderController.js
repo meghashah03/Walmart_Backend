@@ -54,19 +54,20 @@ exports.getOrderById = async (req, res, next) => {
 };
 
 // POST /orders
+// POST /orders
 exports.createOrder = async (req, res, next) => {
   const session = await mongoose.startSession();
-   session.startTransaction();
+  session.startTransaction();
   try {
-    const { customerId, items, shippingAddress } = req.body;
+    const { customerId, items, shippingAddress, fulfillmentDate, status } = req.body;
 
     if (!customerId || !Array.isArray(items) || items.length === 0 || !shippingAddress) {
-     await session.abortTransaction();
+      await session.abortTransaction();
       return res.status(400).json({ error: 'Missing required order fields' });
     }
 
     // Validate each item
-   for (const item of items) {
+    for (const item of items) {
       if (!item.sku || !item.quantity || item.quantity <= 0) {
         await session.abortTransaction();
         return res.status(400).json({ error: 'Invalid item: sku and positive quantity required' });
@@ -75,10 +76,10 @@ exports.createOrder = async (req, res, next) => {
 
     let totalAmount = 0;
     const finalItems = [];
-     const warehouseInventoryMap = new Map();
+    const warehouseInventoryMap = new Map();
 
     for (const item of items) {
-       const product = await Product.findById(item.sku).session(session);
+      const product = await Product.findById(item.sku).session(session);
       if (!product) {
         await session.abortTransaction();
         return res.status(404).json({ error: `Product ${item.sku} not found` });
@@ -88,7 +89,6 @@ exports.createOrder = async (req, res, next) => {
       totalAmount += priceAtOrder * item.quantity;
 
       const inventories = await Inventory.find({ sku: product._id }).sort({ availableQuantity: -1 }).session(session);
-
       const inventory = inventories.find(inv => inv.availableQuantity >= item.quantity);
       if (!inventory) {
         await session.abortTransaction();
@@ -101,23 +101,26 @@ exports.createOrder = async (req, res, next) => {
 
       finalItems.push({ sku: product._id, quantity: item.quantity, priceAtOrder });
 
-      
-      // Track warehouse usage
       if (!warehouseInventoryMap.has(inventory.warehouseId.toString())) {
         warehouseInventoryMap.set(inventory.warehouseId.toString(), inventory.warehouseId);
       }
     }
-   // For simplicity, use the first warehouse (or implement multi-warehouse logic)
-   const assignedWarehouse = warehouseInventoryMap.values().next().value;
+
+    const assignedWarehouse = warehouseInventoryMap.values().next().value;
+
     const order = new Order({
       customerId,
       items: finalItems,
       totalAmount,
       shippingAddress,
+      status: status || 'Pending',
       fulfillment: {
         warehouseId: assignedWarehouse,
         deliveryId: new mongoose.Types.ObjectId()
-      }
+      },
+      fulfillmentDate: status === 'Fulfilled'
+        ? (fulfillmentDate ? new Date(fulfillmentDate) : new Date())
+        : undefined
     });
 
     const savedOrder = await order.save({ session });
@@ -126,13 +129,14 @@ exports.createOrder = async (req, res, next) => {
     res.status(201).json({
       orderId: savedOrder._id,
       status: savedOrder.status,
+      fulfillmentDate: savedOrder.fulfillmentDate,
       estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
     });
   } catch (error) {
     await session.abortTransaction();
     console.error('Error creating order:', error);
     next(error);
-    } finally {
+  } finally {
     session.endSession();
   }
 };

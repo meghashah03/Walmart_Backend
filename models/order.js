@@ -30,12 +30,13 @@ const fulfillmentSchema = new Schema({
 const orderSchema = new Schema({
   customerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   orderDate: { type: Date, default: Date.now },
-  status: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
+  status: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled','Fulfilled'], default: 'Pending' },
   items: [itemSchema],
   totalAmount: { type: Number, required: true },
   shippingAddress: addressSchema,
  // billingInfo: billingInfoSchema,
-  fulfillment: fulfillmentSchema
+  fulfillment: fulfillmentSchema,
+  fulfillmentDate: { type: Date }
 });
 
 module.exports = mongoose.model('Order', orderSchema);

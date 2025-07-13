@@ -11,11 +11,10 @@ const seedOrders = async () => {
     const products = await Product.find({});
     const warehouses = await Warehouse.find({});
 
-    if (users.length < 2 || products.length < 2 || warehouses.length < 2) {
+    if (users.length < 2 || products.length < 2 || warehouses.length < 1) {
       throw new Error('Not enough users, products, or warehouses to create sample orders.');
     }
 
-    // Safety: fallbacks in case user has no address
     const getAddress = (user) =>
       user.addresses?.[0] || {
         label: 'Default',
@@ -26,56 +25,61 @@ const seedOrders = async () => {
         country: 'Fallback Country',
       };
 
-    const orders = [
-      {
-        customerId: users[0]._id,
-        orderDate: new Date(),
-        status: 'Processing',
-        items: [
-          {
-            sku: products[0]._id,
-            quantity: 2,
-            priceAtOrder: products[0].price.amount,
-          },
-          {
-            sku: products[1]._id,
-            quantity: 1,
-            priceAtOrder: products[1].price.amount,
-          },
-        ],
-        totalAmount:
-          products[0].price.amount * 2 + products[1].price.amount * 1,
-        shippingAddress: getAddress(users[0]),
+    const statuses = ['Fulfilled', 'Processing', 'Pending', 'Cancelled'];
+    const orders = [];
+
+    for (let i = 0; i < 20; i++) {
+      const user = users[i % users.length];
+      const warehouse = warehouses[i % warehouses.length];
+
+      // Pick 1–2 random products per order
+      const itemCount = Math.floor(Math.random() * 2) + 1;
+      const items = [];
+
+      let totalAmount = 0;
+      for (let j = 0; j < itemCount; j++) {
+        const product = products[(i + j) % products.length];
+        const quantity = Math.floor(Math.random() * 5) + 1;
+
+        items.push({
+          sku: product._id,
+          quantity,
+          priceAtOrder: product.price.amount,
+        });
+
+        totalAmount += product.price.amount * quantity;
+      }
+
+      const status = statuses[i % statuses.length];
+
+      const order = {
+        customerId: user._id,
+        orderDate: new Date(Date.now() - i * 24 * 60 * 60 * 1000), // staggered dates
+        status,
+        items,
+        totalAmount,
+        shippingAddress: getAddress(user),
         fulfillment: {
-          warehouseId: warehouses[0]._id,
+          warehouseId: warehouse._id,
         },
-      },
-      {
-        customerId: users[1]._id,
-        orderDate: new Date(),
-        status: 'Pending',
-        items: [
-          {
-            sku: products[1]._id,
-            quantity: 3,
-            priceAtOrder: products[1].price.amount,
-          },
-        ],
-        totalAmount: products[1].price.amount * 3,
-        shippingAddress: getAddress(users[1]),
-        fulfillment: {
-          warehouseId: warehouses[1]._id,
-        },
-      },
-    ];
+      };
+
+      if (status === 'Fulfilled') {
+        order.fulfillmentDate = new Date(Date.now() - (i - 1) * 24 * 60 * 60 * 1000);
+      }
+
+      orders.push(order);
+    }
 
     await Order.insertMany(orders);
-    console.log('Orders seeded successfully');
+    console.log('orders seeded successfully');
   } catch (error) {
-    console.error('Error seeding orders:', error);
+    console.error('Error seeding orders:', error.message);
     throw error;
   }
 };
 
 module.exports = seedOrders;
+
+
 

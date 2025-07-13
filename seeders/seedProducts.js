@@ -91,7 +91,71 @@ const seedProducts = async () => {
             }
           }
         ]
-      }
+      },
+      // Additional 10+ products for variety
+      {
+        sku: 'TEST-003',
+        name: 'Portable Bluetooth Speaker',
+        description: 'Compact speaker with high bass and long battery life.',
+        categories: ['Electronics', 'Audio'],
+        images: ['https://example.com/images/speaker.jpg'],
+        price: { amount: 1299, currency: 'INR' },
+        manufactureDetails: { modelNumber: 'BT-SPK-01', releaseDate: new Date('2023-08-01') },
+        shippingDetail: { weightKg: 0.5, dimensionCm: { length: 12, width: 8, height: 8 } },
+        stockKeepingUnit: 'SKU-SPK-003',
+        brand: 'SoundWave',
+        variants: []
+      },
+      {
+        sku: 'TEST-004',
+        name: 'Wireless Mouse',
+        description: 'Ergonomic mouse with adjustable DPI.',
+        categories: ['Electronics', 'Accessories'],
+        images: ['https://example.com/images/mouse.jpg'],
+        price: { amount: 699, currency: 'INR' },
+        manufactureDetails: { modelNumber: 'MS-WL-10', releaseDate: new Date('2024-01-10') },
+        shippingDetail: { weightKg: 0.1, dimensionCm: { length: 10, width: 6, height: 4 } },
+        stockKeepingUnit: 'SKU-MSE-004',
+        brand: 'ClickPro',
+        variants: []
+      },
+      {
+        sku: 'TEST-005',
+        name: 'USB-C Charger 20W',
+        description: 'Fast charger with overcurrent protection.',
+        categories: ['Electronics', 'Charging'],
+        images: ['https://example.com/images/charger.jpg'],
+        price: { amount: 599, currency: 'INR' },
+        manufactureDetails: { modelNumber: 'CHG-20W', releaseDate: new Date('2023-10-05') },
+        shippingDetail: { weightKg: 0.15, dimensionCm: { length: 6, width: 4, height: 4 } },
+        stockKeepingUnit: 'SKU-CHG-005',
+        brand: 'ChargeUp',
+        variants: []
+      },
+      // More dummy products...
+      ...Array.from({ length: 8 }).map((_, i) => ({
+        sku: `TEST-${i + 6}`,
+        name: `Sample Product ${i + 6}`,
+        description: 'Generic sample description.',
+        categories: ['CategoryA', 'CategoryB'],
+        images: ['https://example.com/images/sample.jpg'],
+        price: { amount: 100 + i * 50, currency: 'INR' },
+        manufactureDetails: {
+          modelNumber: `MOD-${i + 6}`,
+          releaseDate: new Date('2024-01-01')
+        },
+        shippingDetail: {
+          weightKg: 0.25,
+          dimensionCm: {
+            length: 10,
+            width: 5,
+            height: 5
+          }
+        },
+        stockKeepingUnit: `SKU-SAMPLE-${i + 6}`,
+        brand: 'GenericBrand',
+        variants: []
+      }))
     ];
 
     const result = await Product.insertMany(dummyProducts);
@@ -104,3 +168,4 @@ const seedProducts = async () => {
 };
 
 module.exports = seedProducts;
+
