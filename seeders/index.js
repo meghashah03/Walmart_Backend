@@ -11,6 +11,7 @@ const seedMetrics = require('./seedMetrics');
 const seedForecast = require('./seedForecast');
 const seedChatLog = require('./seedChatLog');
 const seedAlerts = require('./seedAlerts');
+const seedFeedback = require('./seedFeedback');
 
 dotenv.config();
 
@@ -41,9 +42,13 @@ const runSeeders = async () => {
     await seedForecast(); 
     await seedChatLog();
     await seedAlerts();
-    console.log('seedUsers completed');
+    await seedFeedback();
 
+
+    console.log('seedUsers completed');
     console.log('All seeders completed!');
+
+    
     process.exit(0);
   } catch (err) {
     console.error('Seeder error:', err.message);

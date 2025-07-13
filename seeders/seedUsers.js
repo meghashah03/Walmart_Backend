@@ -7,9 +7,9 @@ const seedUsers = async () => {
 
     const dummyUsers = [
       {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
+        firstName: 'Sana',
+        lastName: 'Croft',
+        email: 'sana@example.com',
          hashedPassword: await bcrypt.hash('defaultPassword123', 10), 
         roles: ['customer'],
         phone: '1234567890',

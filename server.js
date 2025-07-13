@@ -18,6 +18,7 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const metricsRoutes = require('./routes/metricsRoutes');
 const errorHandler = require('./middlewares/errorHandler');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 dotenv.config();
 connectDB();
@@ -36,6 +37,7 @@ app.use('/warehouses', warehouseRoutes);
 app.use('/inventory', inventoryRoutes);
 app.use('/orders', orderRoutes);
 app.use('/metrics', metricsRoutes);
+app.use('/feedback', feedbackRoutes);  
 
 
 
