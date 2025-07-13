@@ -65,7 +65,7 @@ const seedOrders = async () => {
       };
 
       if (status === 'Fulfilled') {
-        order.fulfillmentDate = new Date(Date.now() - (i - 1) * 24 * 60 * 60 * 1000);
+         order.fulfillmentDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
       }
 
       orders.push(order);

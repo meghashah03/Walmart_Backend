@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const Schema = mongoose.Schema;
 
 const itemSchema = new Schema({
@@ -17,10 +16,10 @@ const addressSchema = new Schema({
   country: { type: String }
 }, { _id: false });
 
-// const billingInfoSchema = new Schema({
-//   method: { type: String },
-//   last4: { type: String }
-// }, { _id: false });
+const billingInfoSchema = new Schema({
+  method: { type: String }
+  // last4: { type: String } // Uncomment if needed
+}, { _id: false });
 
 const fulfillmentSchema = new Schema({
   warehouseId: { type: Schema.Types.ObjectId, ref: 'Warehouse' },
@@ -30,11 +29,15 @@ const fulfillmentSchema = new Schema({
 const orderSchema = new Schema({
   customerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   orderDate: { type: Date, default: Date.now },
-  status: { type: String, enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled','Fulfilled'], default: 'Pending' },
+  status: {
+    type: String,
+    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Fulfilled'],
+    default: 'Pending'
+  },
   items: [itemSchema],
   totalAmount: { type: Number, required: true },
   shippingAddress: addressSchema,
- // billingInfo: billingInfoSchema,
+  billingInfo: billingInfoSchema,
   fulfillment: fulfillmentSchema,
   fulfillmentDate: { type: Date }
 });
