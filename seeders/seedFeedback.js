@@ -45,7 +45,7 @@ const seedFeedback = async () => {
     await Feedback.insertMany(dummyFeedbacks);
     console.log('Feedbacks seeded successfully');
   } catch (err) {
-    console.error('nError seeding feedbacks:', err.message);
+    console.error('Error seeding feedbacks:', err.message);
     throw err;
   }
 };

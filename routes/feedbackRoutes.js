@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const Feedback = require('../models/feedback');
+//const authenticateAdmin = require('../middleware/authenticateAdmin');
 
 // Create new feedback (Public)
 router.post('/', async (req, res) => {
   try {
+     if (!req.body.feedback || !req.body.name || !req.body.email) {
+     return res.status(400).json({ error: 'Missing required fields: feedback, name, email' });
+   }
     const feedback = new Feedback(req.body);
     const saved = await feedback.save();
     res.status(201).json(saved);
@@ -26,6 +30,9 @@ router.get('/', async (req, res) => {
 // Update feedback (Admin) — mark as checked, or update likes/dislikes
 router.patch('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+     return res.status(400).json({ error: 'Invalid feedback ID' });
+    }
     const updated = await Feedback.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true

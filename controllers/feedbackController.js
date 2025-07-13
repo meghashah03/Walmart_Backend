@@ -23,7 +23,13 @@ exports.getAllFeedback = async (req, res) => {
 // Update feedback (like, dislike, check)
 exports.updateFeedback = async (req, res) => {
   try {
-    const updated = await Feedback.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Feedback.findByIdAndUpdate(req.params.id, req.body, { 
+      new: true, 
+      runValidators: true 
+    });
+   if (!updated) {
+      return res.status(404).json({ message: 'Feedback not found' });
+   }
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
